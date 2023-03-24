@@ -1,0 +1,125 @@
+body {
+	font-family: 'Ropa Sans', sans-serif;
+}
+
+.brand-text {
+	color: #000000;
+	font-size: 4vh;
+	font-family: 'Muli', sans-serif;
+	font-weight: 200;
+}
+
+
+/* Landing Page */
+.header-landing {
+	background: url('../img/bg-header-landing.png');
+}
+
+/* Login Page Styles*/
+
+.login-body {
+	background-color: #3F969A;
+	background: url('../img/bg-login.png');
+}
+
+.main-header {
+	font-size: 15vh;
+}
+
+.sub-header {
+	font-weight: 200;
+	font-size: 6vh;
+	font-family: 'Muli', sans-serif;
+}
+
+.input-login {
+	border: none !important;
+	border-radius: 0px !important;
+	background: transparent !important;
+	width: 25vw;
+	font-size: 3vh;
+	border-bottom: solid 1.5px #000000 !important;
+}
+
+.btn-login {
+	width: 25vw;
+	border-radius: 0 !important;
+	background-color: #3F969A !important;
+}
+
+/* Choose Theme Styles */
+.choose-body {
+	background-color: #132f63;
+	background-image: linear-gradient(to top, #C0FFED, #FFE3DA);
+}
+
+.theme-card {
+	width: 100%; 
+	/*height: 15vw;
+	border-radius: 7px;
+	box-shadow: 5px 5px 8px #888888;*/
+}
+
+.choose-theme-msg {
+	font-size: 8vh;
+}
+
+.theme-text {
+	font-size: 4vh;
+}
+
+/* Exercises Styles */
+.nav-style-light{
+	height: 8vh; 
+	align-items: center; 
+	justify-content: space-between;
+	border-bottom: solid 2px black;
+}
+
+.flex-row-style {
+	border-bottom: solid 1px white;
+	background: transparent !important;
+}
+
+.flex-col-style {
+	border-right: solid 1px white;
+}
+
+.dot {
+  height: 11.75vh;
+  width: 11.75vh;
+  background-color: transparent !important;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.btn-round {
+	border-radius: 100% !important;
+	height:5vh !important;
+	width: 5vh !important;
+}
+
+
+/* Tutorial */
+.modal-backdrop {
+	background: none;
+}
+
+.modal-dialog-introduce {
+    margin-left: 22%;
+    margin-top: 2%;
+}
+
+.modal-dialog-blockly {
+    margin-left: 22%;
+    margin-top: 12%;
+}
+
+.modal-dialog-run {
+    margin-left: 22%;
+    margin-top: 37%;
+}
+
+.modal-dialog-success {
+    margin-top: 12%;
+}
