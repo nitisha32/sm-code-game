@@ -1,0 +1,39 @@
+{% load static %}
+<head>
+	<link rel="stylesheet" type="text/css" href="{% static 'coreresources/bootstrap/css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'css/app_styles.css' %}" />
+	<link href="{% static 'coreresources/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Muli:200,300,400,600,700|Ropa+Sans&display=swap" rel="stylesheet">
+	<script src="{% static 'coreresources/jquery/jquery.min.js' %}"></script>
+	<script src="{% static 'coreresources/bootstrap/js/bootstrap.min.js' %}"></script>
+</head>
+
+<body style="background-color: #3F969A;" class="login-container py-0">
+	<div class="container m-0 p-0" style="min-width: 100vw;">
+		<div class="row m-0 p-0 bg-dark" style="height: 8vh; align-items: center; justify-content: space-between;">
+			<div class='brand-text'>
+				<img src="../../static/img/logo-sq.png" style="height: 7vh;" class="ml-3 mr-2" />SchoolMaster
+			</div>
+			<div id='progressData' class="justify-content-center"></div>
+			<div class='brand-text mr-3'>
+				<form method="POST" class="form-horizontal pt-4" id="logOut">
+				{% csrf_token %}
+					<button name='logout' class="btn btn-dark"> Logout </button>
+				</form>
+			</div>
+		</div>
+		<div class="d-flex justify-content-center align-items-center flex-column" style="min-height: 100vh;">
+			<h1 class="text-center">Congratulations! You have completed all exercises</h1>
+			<h2 class="text-center">Please enter your email here if you would like to be notified about our future releases</h2>
+			<form method="POST" class="form-horizontal pt-4">
+				{% csrf_token %}
+				<fieldset class="msfrm">
+					<div class="row my-3">
+						<input type="text" name="email" placeholder="Email" class="mx-3 px-2 my-3 input-login" style="min-width: 35vw !important;">
+					</div>
+				</fieldset>
+				<button type="submit" class="btn btn-lg btn-login btn-dark my-3" style="min-width: 35vw !important;">Submit</button>
+			</form>
+		</div>
+	</div>
+</body>

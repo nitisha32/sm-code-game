@@ -1,0 +1,245 @@
+{% load static %}
+
+<head>
+	<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+	<link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'css/sm_styles.css' %}" />
+	<link href="https://fonts.googleapis.com/css?family=Muli:200,300,400,600,700|Ropa+Sans&display=swap" rel="stylesheet">
+
+	<!--blockly core-->
+	<script src="{% static 'js/google-blockly/blockly_compressed.js' %}"></script>
+	<script src="{% static 'js/google-blockly/blocks_compressed.js' %}"></script>
+	<script src="{% static 'js/google-blockly/msg/js/en.js' %}"></script>
+	<script src="{% static 'js/google-blockly/javascript_compressed.js' %}"></script>
+	<script src="{% static 'js/google-blockly/generators/javascript/text.js' %}"></script>
+
+	<!--blockly custom-->
+	<script src="{% static 'js/google-blockly/blocks/myblocks.js' %}"></script>
+</head>
+
+<body>
+	<div class="container m-0 p-0" style="min-width: 100vw;">
+		<div class="row m-0 p-0 bg-light nav-style-light">
+			<a style="text-decoration: None;" href="../"><div class='brand-text'>
+				<img src="../../static/img/logo-sq.png" style="height: 7vh;" class="ml-3 mr-2" />SchoolMaster
+			</div></a>
+			<div class='brand-text mr-3 dropdown'>
+				<button class="btn btn-light" style="background-color: #ffffff; color: #000000; border-color: #3E969A;" id='tryfocus' onclick='tryfocus();'> Focus </button>
+				<button class="btn btn-light dropdown-toggle" style="background-color: #ffffff; color: #000000; border-color: #3E969A;" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> {{username}} </button>
+				<div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+					<li class="dropdown-item" href="#">Performance</li>
+					<div class="dropdown-divider"></div>
+					<li class="dropdown-item" onclick="logoutFunc();">Logout</li>
+				</div>
+			</div>
+		</div>
+		<div class="row m-0 p-0">
+			<div class="col-sm-3 m-0 p-0" style="background-color: #ffffff; opacity: .9;">
+				<div class="container mx-0 my-0 pl-0" style="height: 92vh;">
+					<p class="p-3 ml-3 mt-2" style="background-color: #f6554d; border-radius: 6px; border: solid 2px black;max-width: 22vw; font-size: 3vh;" id='msg'>Help the superhero reach the crashing plane</p>
+					<div class="container-fluid ml-1"  id="blocklyDiv" style="height: 60vh; width:24vw; border: none;">
+						<xml id="toolbox" style="display: none">
+							<block type="move_left"></block>
+							<block type="move_right"></block>
+							<block type="move_up"></block>	
+							<block type="move_down"></block>
+						</xml>
+					</div>
+					<div class="d-flex justify-content-start">
+						<button class="btn btn-info btn-lg ml-3 mt-3"  style="width: 6vw; background-color: #132F63; border-color: #000000; border-width: 2px;" type="button" id='resetBtn' onclick="resetCode('btn');">Reset</button>
+						<button class="btn btn-danger btn-lg ml-3 mt-3" style="width: 6vw; background-color:#132F63;border-color: #000000; border-width: 2px;" type="button" id='runBtn' onclick="runCode();">Run</button>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-9 m-0 p-0">
+				<div class="d-flex flex-column m-0 p-0" id="gridDiv" style="height: 92vh; border-left: solid 1px white;">
+				</div>
+			</div>
+		</div>
+		<form method="POST" class="form-horizontal pt-4" id="progressUpdate">
+			{% csrf_token %}
+			<input type="number" hidden name="questionid" id='questionid'/>
+			<input type="number" hidden name="tries" id='tries'/>
+			<input type="text" hidden name="timetaken" id='timetaken'/>
+			<input type="text" hidden name="codetried" id='codetried'/>
+		</form>
+		<form method="POST" class="form-horizontal pt-4" id="prevQues">
+			{% csrf_token %}
+			<input type="number" hidden name="goToQues" id='goToQues'/>
+		</form>
+		<form method="POST" class="form-horizontal pt-4" id="logOutForm">
+			{% csrf_token %}
+			<input type="test" hidden name="logout" id='logout'/>
+		</form>
+	</div>
+</body>
+
+<script type="application/javascript">
+	document.body.style.background = "#f3f3f3 url('../../static/img/bg-su.png')";
+	var workspace = Blockly.inject('blocklyDiv',
+       {toolbox: document.getElementById('toolbox')});
+
+	window.addEventListener("load", renderQuestion, false);
+	//workspace.addChangeListener()
+	function addGrid() { 
+		gridElement = document.getElementById('gridDiv');
+		gridElement.innerHTML = "";
+		rows = {{question.grid_size.0}};
+		columns = {{question.grid_size.1}};
+		counter = 1;
+		for (var i = 1; i <= rows ; i++) {
+			var textHTML = "";
+			textHTML+="<div class='d-flex flex-fill flex-row-style' id='"+ i + "'>";
+			for (var j = 1; j <= columns; j++) {
+				textHTML+="<div class='p-2 flex-col-style flex-fill text-white' id='grid-"+ i + j + "'></div>";
+			}
+			textHTML+="</div>"
+			gridElement.innerHTML+=textHTML;
+		}
+		
+	}
+	var target = {{question.target_position}};
+	var mover = {{question.mover_position}};
+	var mover_coordinates = 'grid-' + (mover[0]) + (mover[1]);
+	var target_coordinates = 'grid-' + (target[0]) + (target[1]);
+	var tries = 0;
+	var time_taken = [];
+	var code_tried = [];
+	var obstacle_coordinates = [];
+	{% if question.obstacle_positions %}
+		{% for obstacle in question.obstacle_positions %}
+			obstacle_coordinates.push('grid-' + ({{obstacle}}[0]) + ({{obstacle}}[1]));
+		{% endfor %}
+	{% endif %}
+
+    function renderQuestion () {
+    	addGrid();
+    	start_time = Math.floor(Date.now() / 1000);
+		addElements(mover_coordinates, target_coordinates);
+	}
+
+	function runCode() {
+		var input = Blockly.JavaScript.workspaceToCode(workspace);
+		end_time = Math.floor(Date.now() / 1000);
+
+		code = input.trim().split(']');
+		code.pop();
+		code_try = []
+
+		for (var i = 0; i<code.length; i++) {
+			var item = code[i];
+			item = item.replace('[','');
+			item = item.replace(']','');
+			item = item.trim().split(',');
+			mover_coordinates = 'grid-' + (parseInt(item[0])) + (parseInt(item[1]))
+			mover[0] += parseInt(item[0]);
+			mover[1] += parseInt(item[1]);
+			code_try.push(item[2])
+			mover_coordinates = 'grid-' + (mover[0]) + (mover[1]);
+			if (obstacle_coordinates.indexOf(mover_coordinates) > -1) {
+				alert('Oh no! You hit something');
+				break;
+			} else {
+				addElements(mover_coordinates, target_coordinates);
+			}
+		}
+
+		tries += 1;
+		time_taken.push(end_time-start_time);
+		code_tried.push('[' + code_try + ']');
+		//checksuccess();
+	}
+	
+	function resetCode(wkspc) {
+		mover = {{question.mover_position}};
+		mover_coordinates = 'grid-' + (mover[0]) + (mover[1]);
+		addElements(mover_coordinates, target_coordinates);
+		if (wkspc === 'btn') {
+			workspace.clear();
+		}
+		start_time = Math.floor(Date.now() / 1000);
+	}
+
+	function addElements(mover_coordinates, target_coordinates) {
+		for (var i = 1; i<=6; i++) {
+			for (var j = 1; j<=10; j++) {
+				elem_id = 'grid-' + i + j;
+				sel_elem = document.getElementById(elem_id)
+				if(elem_id === mover_coordinates) {
+					sel_elem.innerHTML = "<img id='mover' style='height: 12.3vh;' class='img-fluid' src = '../../static/img/mover-su.png'/>";
+				}
+				else if ( elem_id === target_coordinates) {
+					sel_elem.innerHTML = "<img id='target' style='height: 12.35vh;' class='img-fluid' src = '../../static/img/target-su.png'/>";
+				}
+				else {
+					if (obstacle_coordinates.indexOf(elem_id) > -1) {
+						sel_elem.innerHTML = "<img id='target' style='height: 12.35vh;' class='img-fluid' src = '../../static/img/obs-su.png'/>";
+					}
+					else {
+						sel_elem.innerHTML = "<span class='dot p-0 m-0'></span>";
+					}					
+				}					
+			}
+		}
+	}
+
+	function checksuccess() {
+		if (target[0] === mover[0] && target[1] === mover[1]) {
+			setTimeout(function() {alert("Awesome! You did it!"); submitForm();}, 500);
+		}
+		else {
+			setTimeout(function() {
+				alert("Try Again"); 
+				resetCode('-');
+			}, 500);	
+		}
+	}
+
+	function submitForm() {
+			document.getElementById('tries').value = tries;
+			document.getElementById('timetaken').value = time_taken;
+			document.getElementById('codetried').value = code_tried;
+			document.getElementById('questionid').value = {{question.id}};
+			document.getElementById('progressUpdate').submit();
+	}
+
+	function futureques() {
+		alert('Please complete current exercise first');
+	}
+
+	function goToQuestion(ques_num) {
+		document.getElementById('goToQues').value = ques_num;
+		document.getElementById('prevQues').submit();
+
+	}
+	function logoutFunc() {
+		if (confirm("Are you sure you want to logout?")) {
+			document.getElementById('logOutForm').submit();
+		} 
+		else {
+			return;
+		}
+	}
+
+	function tryfocus(){
+		blocks = workspace.getAllBlocks()
+		console.log(blocks)
+		for (var i=0; i<blocks.length;i++){
+			if(blocks[i]['type']==='move_up') {
+				alert('you did it')
+			}
+		}
+		document.getElementById('msg').style.WebkitFilter="grayscale(90%) blur(1px)"
+		document.getElementById('resetBtn').style.WebkitFilter="grayscale(90%) blur(1px)"
+		document.getElementById('runBtn').style.WebkitFilter="grayscale(90%) blur(1px)"
+	}
+
+	function onMove(event) {
+		if (event.type == Blockly.Events.MOVE) {
+			alert('Congratulations on creating your first comment!')
+			workspace.removeChangeListener(onMove);
+		}
+	}	
+	workspace.addChangeListener(onMove);
+</script>
